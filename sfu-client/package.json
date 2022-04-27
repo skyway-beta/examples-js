@@ -2,12 +2,15 @@
   "name": "skyway-beta-js-sdk-example-sfu-client",
   "private": true,
   "license": "MIT",
+  "scripts": {
+    "start": "webpack --watch"
+  },
+  "dependencies": {
+    "@skyway-sdk/core": "latest",
+    "@skyway-sdk/sfu-client": "latest"
+  },
   "devDependencies": {
     "webpack": "^5.69.1",
     "webpack-cli": "^4.9.2"
-  },
-  "dependencies": {
-    "@skyway-sdk/core": "0.2.0-beta.18",
-    "@skyway-sdk/sfu-client": "0.2.0-beta.13"
   }
 }
