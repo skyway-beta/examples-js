@@ -1,13 +1,13 @@
 import {
   SkyWayAuthToken,
   SkyWayContext,
-  SkyWayMediaDevices,
   SkyWayRoom,
+  SkyWayStreamFactory,
   uuidV4,
-} from '@skyway-sdk/room';
+} from "@skyway-sdk/room";
 
-const appId = '<YOUR APP ID>';
-const secretKey = '<YOUR SECRET KEY>';
+const appId = "76394876-71d4-4327-96a8-5f262a23715c";
+const secretKey = "SCOQ1l5swgLkKXMednmNaSmqGjq5/KA6+oe2PqLCwSg=";
 
 const testToken = new SkyWayAuthToken({
   jti: uuidV4(),
@@ -17,22 +17,22 @@ const testToken = new SkyWayAuthToken({
     app: {
       id: appId,
       turn: true,
-      actions: ['read'],
+      actions: ["read"],
       channels: [
         {
-          id: '*',
-          name: '*',
-          actions: ['write'],
+          id: "*",
+          name: "*",
+          actions: ["write"],
           members: [
             {
-              id: '*',
-              name: '*',
-              actions: ['write'],
+              id: "*",
+              name: "*",
+              actions: ["write"],
               publication: {
-                actions: ['write'],
+                actions: ["write"],
               },
               subscription: {
-                actions: ['write'],
+                actions: ["write"],
               },
             },
           ],
@@ -44,18 +44,18 @@ const testToken = new SkyWayAuthToken({
 const tokenString = testToken.encode(secretKey);
 
 async function main() {
-  const localVideo = document.getElementById('js-local-stream');
-  const joinTrigger = document.getElementById('js-join-trigger');
-  const leaveTrigger = document.getElementById('js-leave-trigger');
-  const remoteVideos = document.getElementById('js-remote-streams');
-  const roomName = document.getElementById('js-room-id');
-  const localText = document.getElementById('js-local-text');
-  const sendTrigger = document.getElementById('js-send-trigger');
-  const messages = document.getElementById('js-messages');
+  const localVideo = document.getElementById("js-local-stream");
+  const joinTrigger = document.getElementById("js-join-trigger");
+  const leaveTrigger = document.getElementById("js-leave-trigger");
+  const remoteVideos = document.getElementById("js-remote-streams");
+  const roomName = document.getElementById("js-room-id");
+  const localText = document.getElementById("js-local-text");
+  const sendTrigger = document.getElementById("js-send-trigger");
+  const messages = document.getElementById("js-messages");
 
   const { audio, video } =
-    await SkyWayMediaDevices.createMicrophoneAudioAndCameraStream();
-  const data = await SkyWayMediaDevices.createDataStream();
+    await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
+  const data = await SkyWayStreamFactory.createDataStream();
 
   // Render local stream
   localVideo.muted = true;
@@ -64,23 +64,23 @@ async function main() {
   await localVideo.play().catch(console.error);
 
   const context = await SkyWayContext.Create(tokenString, {
-    logLevel: 'debug',
+    log: { level: "debug" },
   });
 
   // Register join handler
-  joinTrigger.addEventListener('click', async () => {
+  joinTrigger.addEventListener("click", async () => {
     const room = await SkyWayRoom.FindOrCreate(context, {
       name: roomName.value,
-      type: 'p2p',
+      type: "p2p",
     });
-    messages.textContent += '=== You joined ===\n';
+    messages.textContent += "=== You joined ===\n";
     const member = await room.join();
     messages.textContent += `=== ${member.id} joined ===\n`;
 
     const userVideo = {};
 
     member.onStreamSubscribed.add(async ({ stream, subscription }) => {
-      if (stream.contentType === 'data') {
+      if (stream.contentType === "data") {
         stream.onData.add((data) => {
           const { message } = data;
           messages.textContent += `${subscription.publication.publisher.id}: ${message}\n`;
@@ -90,10 +90,10 @@ async function main() {
 
       const publisherId = subscription.publication.publisher.id;
       if (!userVideo[publisherId]) {
-        const newVideo = document.createElement('video');
+        const newVideo = document.createElement("video");
         newVideo.playsInline = true;
         newVideo.setAttribute(
-          'data-member-id',
+          "data-member-id",
           subscription.publication.publisher.id
         );
         newVideo.autoplay = true;
@@ -132,7 +132,7 @@ async function main() {
     });
 
     member.onLeft.once(() => {
-      messages.textContent += '== You left ===\n';
+      messages.textContent += "== You left ===\n";
       Array.from(remoteVideos.children).forEach((element) => {
         const remoteVideo = element;
         const stream = remoteVideo.srcObject;
@@ -143,13 +143,13 @@ async function main() {
       room.dispose();
     });
 
-    sendTrigger.addEventListener('click', () => {
+    sendTrigger.addEventListener("click", () => {
       data.write({ message: localText.value });
       messages.textContent += `${member.id}: ${localText.value}\n`;
-      localText.value = '';
+      localText.value = "";
     });
     leaveTrigger.addEventListener(
-      'click',
+      "click",
       async () => {
         await member.leave();
       },

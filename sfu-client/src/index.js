@@ -1,16 +1,15 @@
 import {
-  SkyWayChannel,
   RemoteDataStream,
   SkyWayAuthToken,
+  SkyWayChannel,
   SkyWayContext,
-  SkyWayMediaDevices,
+  SkyWayStreamFactory,
   uuidV4,
-} from '@skyway-sdk/core';
+} from "@skyway-sdk/core";
+import { SfuBotMember, SfuClientPlugin } from "@skyway-sdk/sfu-client";
 
-import { SfuBotMember, SfuClientPlugin } from '@skyway-sdk/sfu-client';
-
-const appId = '<YOUR APP ID>';
-const secretKey = '<YOUR SECRET KEY>';
+const appId = "76394876-71d4-4327-96a8-5f262a23715c";
+const secretKey = "SCOQ1l5swgLkKXMednmNaSmqGjq5/KA6+oe2PqLCwSg=";
 
 const testToken = new SkyWayAuthToken({
   jti: uuidV4(),
@@ -20,29 +19,29 @@ const testToken = new SkyWayAuthToken({
     app: {
       id: appId,
       turn: true,
-      actions: ['read'],
+      actions: ["read"],
       channels: [
         {
-          id: '*',
-          name: '*',
-          actions: ['write'],
+          id: "*",
+          name: "*",
+          actions: ["write"],
           members: [
             {
-              id: '*',
-              name: '*',
-              actions: ['write'],
+              id: "*",
+              name: "*",
+              actions: ["write"],
               publication: {
-                actions: ['write'],
+                actions: ["write"],
               },
               subscription: {
-                actions: ['write'],
+                actions: ["write"],
               },
             },
           ],
           sfuBots: [
             {
-              actions: ['write'],
-              forwardings: [{ actions: ['write'] }],
+              actions: ["write"],
+              forwardings: [{ actions: ["write"] }],
             },
           ],
         },
@@ -53,14 +52,14 @@ const testToken = new SkyWayAuthToken({
 const tokenString = testToken.encode(secretKey);
 
 async function main() {
-  const localVideo = document.getElementById('js-local-stream');
-  const joinTrigger = document.getElementById('js-join-trigger');
-  const leaveTrigger = document.getElementById('js-leave-trigger');
-  const remoteVideos = document.getElementById('js-remote-streams');
-  const roomId = document.getElementById('js-room-id');
+  const localVideo = document.getElementById("js-local-stream");
+  const joinTrigger = document.getElementById("js-join-trigger");
+  const leaveTrigger = document.getElementById("js-leave-trigger");
+  const remoteVideos = document.getElementById("js-remote-streams");
+  const roomId = document.getElementById("js-room-id");
 
   const { audio, video } =
-    await SkyWayMediaDevices.createMicrophoneAudioAndCameraStream();
+    await SkyWayStreamFactory.createMicrophoneAudioAndCameraStream();
 
   // Render local stream
   localVideo.muted = true;
@@ -69,13 +68,13 @@ async function main() {
   await localVideo.play().catch(console.error);
 
   const context = await SkyWayContext.Create(tokenString, {
-    logLevel: 'debug',
+    log: { level: "debug" },
   });
   const plugin = new SfuClientPlugin();
   context.registerPlugin(plugin);
 
   // Register join handler
-  joinTrigger.addEventListener('click', async () => {
+  joinTrigger.addEventListener("click", async () => {
     const channel = await SkyWayChannel.FindOrCreate(context, {
       name: roomId.value,
     });
@@ -95,11 +94,11 @@ async function main() {
 
       const publisherId = subscription.publication.origin.publisher.id;
       if (!userVideo[publisherId]) {
-        const newVideo = document.createElement('video');
+        const newVideo = document.createElement("video");
         newVideo.playsInline = true;
         // mark peerId to find it later at peerLeave event
         newVideo.setAttribute(
-          'data-member-id',
+          "data-member-id",
           subscription.publication.publisher.id
         );
         newVideo.autoplay = true;
@@ -155,7 +154,7 @@ async function main() {
     });
 
     leaveTrigger.addEventListener(
-      'click',
+      "click",
       async () => {
         await member.leave();
       },
